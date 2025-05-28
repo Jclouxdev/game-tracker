@@ -7,6 +7,4 @@ export type Game = {
     developer: string;
     publisher: string;
     platforms: string[];
-    createdAt: Date;
-    updatedAt: Date;
 }

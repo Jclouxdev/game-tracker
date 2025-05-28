@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "A simple game tracker application",
   "scripts": {
-    "dev": "pnpm --parallel run dev"
+    "dev": "pnpm run dev:shared & pnpm run dev:backend & pnpm run dev:frontend",
+    "dev:shared": "pnpm --filter shared build:watch",
+    "dev:backend": "pnpm --filter backend start:dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build:shared": "pnpm --filter shared build"
   },
   "keywords": [
     "Clean Archi",
