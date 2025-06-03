@@ -8,8 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "pre-commit": "lint-staged",
-    "commit-message": "--no -- commitlint --edit ${1}"
+    "pre-commit": "lint-staged"
   },
   "lint-staged": {
     "**/*.{js,ts,tsx}": [

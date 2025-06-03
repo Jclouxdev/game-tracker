@@ -8,8 +8,7 @@
     "dev:backend": "pnpm --filter backend start:dev",
     "dev:frontend": "pnpm --filter frontend dev",
     "build:shared": "pnpm --filter shared build",
-    "pre-commit": "pnpm run --filter \"@packages/*\" pre-commit",
-    "commit-message": "pnpm run --filter \"@packages/*\" commit-message",
+    "pre-commit": "pnpm run --filter \"@game-tracker/*\" pre-commit",
     "prepare": "husky"
   },
   "keywords": [

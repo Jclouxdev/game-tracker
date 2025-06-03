@@ -24,8 +24,7 @@
     "build:watch": "tsc -p tsconfig.build.json --watch",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
-    "pre-commit": "lint-staged",
-    "commit-message": "--no -- commitlint --edit ${1}"
+    "pre-commit": "lint-staged"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
