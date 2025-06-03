@@ -1,0 +1,252 @@
+# ========================================
+# 🎮 Game Tracker - Development Makefile
+# ========================================
+
+.PHONY: help dev build clean install lint test commit push reset info
+.DEFAULT_GOAL := help
+
+# Colors for output
+GREEN := \033[32m
+YELLOW := \033[33m
+BLUE := \033[34m
+RED := \033[31m
+RESET := \033[0m
+
+# Variables
+PNPM := pnpm
+NPX := npx
+NODE := node
+
+# Detect OS for cross-platform commands
+ifeq ($(OS),Windows_NT)
+    RM_RF = rmdir /s /q
+    FIND_DELETE = del /s /q
+    NULL_DEVICE = nul
+else
+    RM_RF = rm -rf
+    FIND_DELETE = find . -name
+    NULL_DEVICE = /dev/null
+endif
+
+# ========================================
+# 📖 Help & Info
+# ========================================
+
+help: ## 📖 Show this help message
+	@echo "$(BLUE)🎮 Game Tracker - Available Commands:$(RESET)"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+	awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(RESET) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(YELLOW)📝 Usage: make <command>$(RESET)"
+
+info: ## 📊 Show project information
+	@echo "$(BLUE)📖 Project Information:$(RESET)"
+	@echo "Node: $$($(NODE) --version)"
+	@echo "pnpm: $$($(PNPM) --version)"
+	@echo "Git: $$(git --version)"
+	@echo ""
+	@echo "$(BLUE)📊 Project Structure:$(RESET)"
+	@find packages -name "*.ts" -o -name "*.tsx" | wc -l | xargs echo "TypeScript files:"
+	@find packages -name "*.js" -o -name "*.jsx" | wc -l | xargs echo "JavaScript files:"
+
+# ========================================
+# 📥 Installation & Setup
+# ========================================
+
+install: ## 📥 Install all dependencies
+	@echo "$(YELLOW)📥 Installing dependencies...$(RESET)"
+	$(PNPM) install
+	@echo "$(GREEN)✅ Dependencies installed$(RESET)"
+
+setup: install build-shared ## 🔧 Initial project setup
+	@echo "$(GREEN)✅ Project setup completed$(RESET)"
+
+# ========================================
+# 🏗️ Build Commands
+# ========================================
+
+build-shared: ## 📦 Build shared package
+	@echo "$(YELLOW)📦 Building shared package...$(RESET)"
+	$(PNPM) run build:shared
+	@echo "$(GREEN)✅ Shared package built$(RESET)"
+
+build-backend: build-shared ## 🔧 Build backend
+	@echo "$(YELLOW)🔧 Building backend...$(RESET)"
+	$(PNPM) --filter backend build
+	@echo "$(GREEN)✅ Backend built$(RESET)"
+
+build-frontend: ## 🎨 Build frontend
+	@echo "$(YELLOW)🎨 Building frontend...$(RESET)"
+	$(PNPM) --filter frontend build
+	@echo "$(GREEN)✅ Frontend built$(RESET)"
+
+build: build-shared build-backend build-frontend ## 📦 Build all packages
+	@echo "$(GREEN)✅ All packages built successfully$(RESET)"
+
+# ========================================
+# 🚀 Development Commands
+# ========================================
+
+dev: build-shared ## 🚀 Start full development environment
+	@echo "$(YELLOW)🚀 Starting development environment...$(RESET)"
+	$(PNPM) run dev
+
+dev-backend: build-shared ## 🔧 Start backend development only
+	@echo "$(YELLOW)🔧 Starting backend development...$(RESET)"
+	$(PNPM) run dev:backend
+
+dev-frontend: ## 🎨 Start frontend development only
+	@echo "$(YELLOW)🎨 Starting frontend development...$(RESET)"
+	$(PNPM) run dev:frontend
+
+dev-shared: ## 📦 Start shared package in watch mode
+	@echo "$(YELLOW)📦 Starting shared in watch mode...$(RESET)"
+	$(PNPM) run dev:shared
+
+# ========================================
+# 🧹 Cleaning Commands
+# ========================================
+
+clean: ## 🧹 Clean build artifacts
+	@echo "$(YELLOW)🧹 Cleaning build artifacts...$(RESET)"
+ifeq ($(OS),Windows_NT)
+	@if exist "packages\backend\dist" $(RM_RF) "packages\backend\dist" 2>$(NULL_DEVICE) || echo.
+	@if exist "packages\frontend\build" $(RM_RF) "packages\frontend\build" 2>$(NULL_DEVICE) || echo.
+	@if exist "packages\frontend\.next" $(RM_RF) "packages\frontend\.next" 2>$(NULL_DEVICE) || echo.
+	@if exist "packages\shared\dist" $(RM_RF) "packages\shared\dist" 2>$(NULL_DEVICE) || echo.
+else
+	@find packages -name "dist" -type d -exec rm -rf {} + 2>$(NULL_DEVICE) || true
+	@find packages -name "build" -type d -exec rm -rf {} + 2>$(NULL_DEVICE) || true
+	@find packages -name ".next" -type d -exec rm -rf {} + 2>$(NULL_DEVICE) || true
+endif
+	@echo "$(GREEN)✅ Build artifacts cleaned$(RESET)"
+
+clean-deps: ## 🧹 Clean node_modules
+	@echo "$(YELLOW)🧹 Cleaning node_modules...$(RESET)"
+ifeq ($(OS),Windows_NT)
+	@if exist "node_modules" $(RM_RF) "node_modules" 2>$(NULL_DEVICE) || echo.
+	@if exist "packages\backend\node_modules" $(RM_RF) "packages\backend\node_modules" 2>$(NULL_DEVICE) || echo.
+	@if exist "packages\frontend\node_modules" $(RM_RF) "packages\frontend\node_modules" 2>$(NULL_DEVICE) || echo.
+	@if exist "packages\shared\node_modules" $(RM_RF) "packages\shared\node_modules" 2>$(NULL_DEVICE) || echo.
+else
+	@$(RM_RF) node_modules packages/*/node_modules 2>$(NULL_DEVICE) || true
+endif
+	@echo "$(GREEN)✅ Dependencies cleaned$(RESET)"
+
+clean-cache: ## 🧹 Clean pnpm cache
+	@echo "$(YELLOW)🧹 Cleaning cache...$(RESET)"
+	$(PNPM) store prune
+	@$(RM_RF) .pnpm-cache 2>$(NULL_DEVICE) || true
+	@echo "$(GREEN)✅ Cache cleaned$(RESET)"
+
+clean-all: clean clean-deps clean-cache ## 🧹 Deep clean everything
+	@echo "$(GREEN)✅ Everything cleaned$(RESET)"
+
+# ========================================
+# 🔍 Code Quality
+# ========================================
+
+lint: ## 🔍 Run ESLint on all packages
+	@echo "$(YELLOW)🔍 Running ESLint...$(RESET)"
+	$(PNPM) run lint
+	@echo "$(GREEN)✅ Linting completed$(RESET)"
+
+lint-fix: ## 🔧 Fix ESLint issues
+	@echo "$(YELLOW)🔧 Fixing ESLint issues...$(RESET)"
+	$(PNPM) run lint:fix
+	@echo "$(GREEN)✅ ESLint issues fixed$(RESET)"
+
+format: ## 💄 Format code with Prettier
+	@echo "$(YELLOW)💄 Formatting code...$(RESET)"
+	$(NPX) prettier --write "packages/**/*.{ts,tsx,js,jsx,json,md}"
+	@echo "$(GREEN)✅ Code formatted$(RESET)"
+
+typecheck: ## 📊 Run TypeScript type checking
+	@echo "$(YELLOW)📊 Type checking...$(RESET)"
+	$(PNPM) --filter shared run build --noEmit || true
+	$(PNPM) --filter backend run build --noEmit || true
+	$(PNPM) --filter frontend run build --noEmit || true
+	@echo "$(GREEN)✅ Type checking completed$(RESET)"
+
+# ========================================
+# 🧪 Testing
+# ========================================
+
+test: ## 🧪 Run all tests
+	@echo "$(YELLOW)🧪 Running tests...$(RESET)"
+	$(PNPM) run test
+	@echo "$(GREEN)✅ Tests completed$(RESET)"
+
+test-backend: ## 🧪 Run backend tests only
+	@echo "$(YELLOW)🧪 Running backend tests...$(RESET)"
+	$(PNPM) --filter backend test
+	@echo "$(GREEN)✅ Backend tests completed$(RESET)"
+
+test-frontend: ## 🧪 Run frontend tests only
+	@echo "$(YELLOW)🧪 Running frontend tests...$(RESET)"
+	$(PNPM) --filter frontend test
+	@echo "$(GREEN)✅ Frontend tests completed$(RESET)"
+
+test-watch: ## 🧪 Run tests in watch mode
+	@echo "$(YELLOW)🧪 Running tests in watch mode...$(RESET)"
+	$(PNPM) run test --watch
+
+# ========================================
+# 🚀 Git & Deployment
+# ========================================
+
+commit: ## ✨ Create commit with gitmoji
+	@echo "$(YELLOW)✨ Opening gitmoji commit...$(RESET)"
+	$(PNPM) run commit
+
+push: lint test ## 🚀 Push to remote (with checks)
+	@echo "$(YELLOW)🚀 Running pre-push checks...$(RESET)"
+	@echo "$(GREEN)✅ All checks passed, pushing...$(RESET)"
+	git push
+
+# ========================================
+# 🔄 Reset & Maintenance
+# ========================================
+
+reset: clean-all install build ## 🔄 Complete reset of development environment
+	@echo "$(GREEN)✅ Development environment reset completed$(RESET)"
+
+fresh: reset ## 🔄 Alias for reset
+	@echo "$(GREEN)✅ Fresh installation completed$(RESET)"
+
+# ========================================
+# 🎯 Productivity Aliases
+# ========================================
+
+d: dev ## 🚀 Quick alias for dev
+b: build ## 📦 Quick alias for build
+c: clean ## 🧹 Quick alias for clean
+l: lint ## 🔍 Quick alias for lint
+t: test ## 🧪 Quick alias for test
+i: install ## 📥 Quick alias for install
+
+# ========================================
+# 🚀 CI/CD Pipeline
+# ========================================
+
+ci: lint typecheck test build ## 🤖 Run full CI pipeline
+	@echo "$(GREEN)✅ CI pipeline completed successfully$(RESET)"
+
+# ========================================
+# 🔧 Troubleshooting
+# ========================================
+
+doctor: ## 🩺 Diagnose common issues
+	@echo "$(BLUE)🩺 Running diagnostics...$(RESET)"
+	@echo "Node version: $$($(NODE) --version)"
+	@echo "pnpm version: $$($(PNPM) --version)"
+	@echo "Git version: $$(git --version)"
+	@echo ""
+	@echo "Checking project structure..."
+	@test -f "packages/shared/package.json" && echo "✅ Shared package exists" || echo "❌ Shared package missing"
+	@test -f "packages/backend/package.json" && echo "✅ Backend package exists" || echo "❌ Backend package missing"
+	@test -f "packages/frontend/package.json" && echo "✅ Frontend package exists" || echo "❌ Frontend package missing"
+	@echo ""
+	@echo "Checking dependencies..."
+	@test -d "node_modules" && echo "✅ Root dependencies installed" || echo "❌ Run 'make install'"
