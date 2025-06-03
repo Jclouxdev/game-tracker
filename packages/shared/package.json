@@ -1,0 +1,32 @@
+{
+  "name": "@game-tracker/shared",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "lint-staged": {
+    "**/*.{js,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "build:watch": "tsc -p tsconfig.build.json --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "pre-commit": "lint-staged"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
