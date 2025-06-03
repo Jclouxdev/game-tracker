@@ -7,7 +7,15 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "pre-commit": "lint-staged",
+    "commit-message": "--no -- commitlint --edit ${1}"
+  },
+  "lint-staged": {
+    "**/*.{js,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@game-tracker/shared": "workspace:*",

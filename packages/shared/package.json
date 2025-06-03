@@ -10,12 +10,22 @@
       "require": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "lint-staged": {
+    "**/*.{js,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "build:watch": "tsc -p tsconfig.build.json --watch",
     "clean": "rm -rf dist",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "pre-commit": "lint-staged",
+    "commit-message": "--no -- commitlint --edit ${1}"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
