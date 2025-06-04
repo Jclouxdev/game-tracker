@@ -216,6 +216,63 @@ fresh: reset ## 🔄 Alias for reset
 	@echo "$(GREEN)✅ Fresh installation completed$(RESET)"
 
 # ========================================
+# 🐳 Docker Commands
+# ========================================
+
+docker-up: ## 🐳 Start all Docker containers
+	@echo "$(YELLOW)🐳 Starting Docker containers...$(RESET)"
+	@echo "$(YELLOW)    - 🕐 Starting database container...$(RESET)"
+	@docker-compose -f ./tools/docker/postgres-docker-compose.yaml --env-file ./packages/backend/.env up -d
+	@echo "$(GREEN)     - ✅ Database container started$(RESET)"
+	@echo "$(YELLOW)    - 🕐 Starting redis container...$(RESET)"
+	@docker-compose -f ./tools/docker/redis-docker-compose.yaml --env-file ./packages/backend/.env up -d
+	@echo "$(GREEN)     - ✅ Redis container started$(RESET)"
+	@echo "$(GREEN)✅ All Docker containers started$(RESET)"
+
+docker-up-database: ## 🐳 Start database container only
+	@echo "$(YELLOW)🐳 Starting database Docker container...$(RESET)"
+	@docker-compose -f ./tools/docker/postgres-docker-compose.yaml --env-file ./packages/backend/.env up -d
+	@echo "$(GREEN)✅ Database Docker container started$(RESET)"
+
+docker-up-redis: ## 🐳 Start Redis container only
+	@echo "$(YELLOW)🐳 Starting Redis Docker container...$(RESET)"
+	@docker-compose -f ./tools//docker/redis-docker-compose.yaml --env-file ./packages/backend/.env up -d
+	@echo "$(GREEN)✅ Redis Docker container started$(RESET)"
+
+docker-down: ## 🐳 Stop all Docker containers
+	@echo "$(YELLOW)🐳 Stopping Docker containers...$(RESET)"
+	@docker-compose -f ./tools/database-docker-compose.yaml down 2>$(NULL_DEVICE) || true
+	@docker-compose -f ./tools/redis-docker-compose.yaml down 2>$(NULL_DEVICE) || true
+	@echo "$(GREEN)✅ All Docker containers stopped$(RESET)"
+
+docker-down-database: ## 🐳 Stop database container
+	@echo "$(YELLOW)🐳 Stopping database container...$(RESET)"
+	@docker-compose -f ./tools/database-docker-compose.yaml down
+	@echo "$(GREEN)✅ Database container stopped$(RESET)"
+
+docker-down-redis: ## 🐳 Stop Redis container
+	@echo "$(YELLOW)🐳 Stopping Redis container...$(RESET)"
+	@docker-compose -f ./tools/redis-docker-compose.yaml down
+	@echo "$(GREEN)✅ Redis container stopped$(RESET)"
+
+docker-logs: ## 📋 Show Docker containers logs
+	@echo "$(YELLOW)📋 Docker containers logs:$(RESET)"
+	@echo "$(BLUE)--- Database logs ---$(RESET)"
+	@docker-compose -f ./tools/database-docker-compose.yaml logs --tail=50 || true
+	@echo "$(BLUE)--- Redis logs ---$(RESET)"
+	@docker-compose -f ./tools/redis-docker-compose.yaml logs --tail=50 || true
+
+docker-ps: ## 📊 Show running Docker containers
+	@echo "$(YELLOW)📊 Running Docker containers:$(RESET)"
+	@docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+docker-clean: ## 🧹 Clean Docker containers and volumes
+	@echo "$(YELLOW)🧹 Cleaning Docker...$(RESET)"
+	@docker-compose -f ./tools/database-docker-compose.yaml down -v 2>$(NULL_DEVICE) || true
+	@docker-compose -f ./tools/redis-docker-compose.yaml down -v 2>$(NULL_DEVICE) || true
+	@echo "$(GREEN)✅ Docker cleaned$(RESET)"
+
+# ========================================
 # 🎯 Productivity Aliases
 # ========================================
 
