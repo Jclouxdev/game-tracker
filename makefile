@@ -236,7 +236,7 @@ docker-up-database: ## 🐳 Start database container only
 
 docker-up-redis: ## 🐳 Start Redis container only
 	@echo "$(YELLOW)🐳 Starting Redis Docker container...$(RESET)"
-	@docker-compose -f ./tools//docker/redis-docker-compose.yaml --env-file ./packages/backend/.env up -d
+	@docker-compose -f ./tools/docker/redis-docker-compose.yaml --env-file ./packages/backend/.env up -d
 	@echo "$(GREEN)✅ Redis Docker container started$(RESET)"
 
 docker-down: ## 🐳 Stop all Docker containers
