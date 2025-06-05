@@ -1,9 +1,9 @@
-export type User = {
-    id: number;
-    username: string;
-    password?: string;
-    email: string;
-    createdAt: Date;
-    updatedAt: Date;
-    profilePictureUrl?: string;
+export interface IUser {
+  id: number;
+  passwordHash: string | null;
+  email: string;
+  displayName: string;
+  createdAt: Date;
+  discordId: string | null;
+  avatarUrl: string | null;
 }
